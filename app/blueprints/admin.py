@@ -54,6 +54,31 @@ def crear_actividad():
 def editar_actividad(act_id):
     actividad = db.get_or_404(Actividad, act_id)
     form = ActividadForm(obj=actividad)
+    form.id_actual = actividad.id 
+
+    if form.validate_on_submit():
+        actividad.nombre = form.nombre.data
+        actividad.deporte = form.deporte.data
+        actividad.plazas_libres = form.plazas_libres.data
+        actividad.cuota = form.cuota.data
+
+        if form.archivo_imagen.data:
+            archivo = form.archivo_imagen.data
+            nombre_imagen = secure_filename(form.deporte.data.lower()+"_"+archivo.filename)            
+            carpeta_subidas = current_app.config["UPLOAD_FOLDER"]
+            os.makedirs(carpeta_subidas, exist_ok=True)
+            archivo.save(os.path.join(carpeta_subidas, nombre_imagen))
+
+            if actividad.imagen and actividad.imagen != nombre_imagen:
+                ruta_antigua = os.path.join(carpeta_subidas, actividad.imagen)
+                if os.path.exists(ruta_antigua):
+                    os.remove(ruta_antigua)
+
+            actividad.imagen = nombre_imagen
+
+        db.session.commit()
+        flash("Producto actualizado con éxito.", "exito")
+        return redirect(url_for("public.mostrar_actividades"))
 
     return render_template(
         "actividad_form.html",

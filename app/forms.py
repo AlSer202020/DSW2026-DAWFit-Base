@@ -72,7 +72,9 @@ class ActividadForm(FlaskForm):
     submit = SubmitField("Guardar Actividad")
 
     def validate_nombre(self, field):
-        if Actividad.query.filter_by(nombre=field.data).first():
+        existente = Actividad.query.filter_by(nombre=field.data).first()
+        id_actual = getattr(self, "id_actual", None)
+        if existente and existente.id != id_actual:
             raise ValidationError("Ya existe una actividad con este nombre")
    
 
