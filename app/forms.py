@@ -17,7 +17,7 @@ from wtforms.validators import (
     ValidationError,
 )
 from app.models import Actividad, Usuario
-
+from wtforms.validators import InputRequired
 
 class LoginForm(FlaskForm):
     """Formulario de inicio de sesión (Ya implementado)."""
@@ -55,12 +55,26 @@ class ActividadForm(FlaskForm):
         ],
     )
 
-    cuota = FloatField("Cuota Mensual (€)", validators=[DataRequired()])
-    plazas_libres = IntegerField("Plazas Libres", default=10)
-    archivo_imagen = FileField("Cartel de la Actividad (JPG, PNG)")
+    cuota = FloatField("Cuota Mensual (€)", validators=[DataRequired(), NumberRange(min=5.0, max=150.0, message="La cuota debe estar entre 5.00€ y 150.00€")
+    ])
+
+    plazas_libres = IntegerField(
+        "Plazas Libres",
+        default=10,
+        validators=[
+            NumberRange(min=0, message="Es obligatorio que el numero de plazas sea minimo 0"), 
+            InputRequired(message="Es obligatorio que el numero de plazas sea minimo 0")],
+            ) 
+    archivo_imagen = FileField("Cartel de la Actividad (JPG, PNG)", validators=[
+        FileAllowed(["jpg", "jpeg", "png"])
+    ])
 
     submit = SubmitField("Guardar Actividad")
 
+    def validate_nombre(self, field):
+        if Actividad.query.filter_by(nombre=field.data).first():
+            raise ValidationError("Ya existe una actividad con este nombre")
+   
 
 class RegistroForm(FlaskForm):
     """Formulario de alta para nuevos socios."""

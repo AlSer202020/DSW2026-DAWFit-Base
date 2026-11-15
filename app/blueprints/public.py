@@ -19,12 +19,25 @@ def home():
     return redirect(url_for("public.mostrar_actividades"))
 
 
+
+
 @public_bp.route("/actividades")
 def mostrar_actividades():
 
-    actividades = Actividad.query.all()
+    busqueda  = request.args.get("busqueda")
+    solo_con_plazas  = request.args.get("solo_con_plazas")
+    consulta = Actividad.query
 
-    deporte_fav = None
+    if busqueda is not None and solo_con_plazas == "on":
+       actividades =  consulta.filter(Actividad.nombre.contains(busqueda)).filter(Actividad.plazas_libres > 0)
+    elif busqueda is not None :
+        actividades =  consulta.filter(Actividad.nombre.contains(busqueda))
+    elif solo_con_plazas == "on":
+        actividades =  consulta.filter(Actividad.plazas_libres > 0)
+    else:
+        actividades = consulta.all()
+
+    deporte_fav = request.cookies.get("deporte_fav")
 
     return render_template(
         "catalogo.html",
@@ -41,7 +54,9 @@ def ver_actividad(act_id):
 
 @public_bp.route("/preferencia/<string:deporte>")
 def guardar_preferencia(deporte):
-    return redirect(url_for("public.mostrar_actividades"))
+    resp = make_response(redirect(url_for("public.mostrar_actividades")))
+    resp.set_cookie("deporte_fav", deporte, max_age=60*60*24*15, samesite="Lax", httponly=True)
+    return resp
 
 
 @public_bp.route("/limpiar-preferencia")
@@ -78,3 +93,4 @@ def cancelar_reserva(act_id):
 @login_required
 def confirmar_reservas():
     return redirect(url_for("public.mostrar_actividades"))
+
