@@ -110,6 +110,13 @@ class RegistroForm(FlaskForm):
             EqualTo("password", message="Las contraseñas no coinciden."),
         ],
     )
+    edad = IntegerField(
+        "Introduce su edad:",
+        validators=[
+            DataRequired(message="Introduce se edad"),
+            NumberRange(min=16, message="La edad minima para poder registrarse es 16")
+        ]
+    )
     submit = SubmitField("Registrarme como Socio")
 
     def validate_username(self, field):
@@ -122,6 +129,26 @@ class RegistroForm(FlaskForm):
 
 
 class CambiarPasswordForm(FlaskForm):
-    """Formulario para cambiar la contraseña desde el perfil del socio."""
-
+    password_actual = PasswordField(
+        "Contraseña actual",
+        validators=[
+            DataRequired(message="La contraseña es obligatoria."),
+            Length(min=6, message="Mínimo 6 caracteres."),
+        ],
+    )
+    password = PasswordField(
+        "Nueva contraseña",
+        validators=[
+            DataRequired(message="La contraseña es obligatoria."),
+            Length(min=6, message="Mínimo 6 caracteres."),
+        ],
+    )
+    confirm_password = PasswordField(
+        "Confirmar Contraseña",
+        validators=[
+            DataRequired(message="Confirma tu contraseña."),
+            EqualTo("password", message="Las contraseñas no coinciden."),
+        ],
+    )
     submit = SubmitField("Actualizar Contraseña")
+    

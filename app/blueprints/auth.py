@@ -35,7 +35,18 @@ def registro():
         return redirect(url_for("public.mostrar_actividades"))
 
     form = RegistroForm()
-
+    if form.validate_on_submit():
+        nuevo_usuario = Usuario(
+            username=form.username.data,
+            email=form.email.data,
+            edad=form.edad.data,
+            rol="socio"
+        )
+        nuevo_usuario.set_password(form.password.data)
+        db.session.add(nuevo_usuario)
+        db.session.commit()
+        flash("¡Cuenta creada con éxito! Ya puedes iniciar sesión.", "exito")
+        return redirect(url_for("auth.login"))
     return render_template("registro.html", form=form)
 
 
@@ -43,6 +54,13 @@ def registro():
 @login_required
 def perfil():
     form = CambiarPasswordForm()
+    if form.validate_on_submit():
+        if not current_user.check_password(form.password_actual.data):
+            flash("La contraseña actual es incorrecta")
+            return render_template("perfil.html", form=form)
+        current_user.set_password(form.password.data)
+        db.session.commit()
+        flash("Contraseña actualizada correctamente", "exito")
 
     return render_template("perfil.html", form=form)
 
@@ -51,6 +69,6 @@ def perfil():
 @login_required
 def logout():
     logout_user()
-
+    session.pop("reservas", None)
     flash("Has cerrado sesión correctamente.", "info")
     return redirect(url_for("public.mostrar_actividades"))
