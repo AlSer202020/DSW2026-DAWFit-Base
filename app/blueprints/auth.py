@@ -40,7 +40,7 @@ def registro():
             username=form.username.data,
             email=form.email.data,
             edad=form.edad.data,
-            rol="socio"
+            rol="socio",
         )
         nuevo_usuario.set_password(form.password.data)
         db.session.add(nuevo_usuario)
@@ -56,7 +56,10 @@ def perfil():
     form = CambiarPasswordForm()
     if form.validate_on_submit():
         if not current_user.check_password(form.password_actual.data):
-            flash("La contraseña actual es incorrecta")
+            flash("La contraseña actual es incorrecta", "error")
+            return render_template("perfil.html", form=form)
+        if current_user.check_password(form.password.data):
+            flash("La contraseña nueva no puede ser la misma que la actual", "error")
             return render_template("perfil.html", form=form)
         current_user.set_password(form.password.data)
         db.session.commit()

@@ -19,6 +19,7 @@ from wtforms.validators import (
 from app.models import Actividad, Usuario
 from wtforms.validators import InputRequired
 
+
 class LoginForm(FlaskForm):
     """Formulario de inicio de sesión (Ya implementado)."""
 
@@ -55,19 +56,32 @@ class ActividadForm(FlaskForm):
         ],
     )
 
-    cuota = FloatField("Cuota Mensual (€)", validators=[DataRequired(), NumberRange(min=5.0, max=150.0, message="La cuota debe estar entre 5.00€ y 150.00€")
-    ])
+    cuota = FloatField(
+        "Cuota Mensual (€)",
+        validators=[
+            DataRequired(),
+            NumberRange(
+                min=5.0, max=150.0, message="La cuota debe estar entre 5.00€ y 150.00€"
+            ),
+        ],
+    )
 
     plazas_libres = IntegerField(
         "Plazas Libres",
         default=10,
         validators=[
-            NumberRange(min=0, message="Es obligatorio que el numero de plazas sea minimo 0"), 
-            InputRequired(message="Es obligatorio que el numero de plazas sea minimo 0")],
-            ) 
-    archivo_imagen = FileField("Cartel de la Actividad (JPG, PNG)", validators=[
-        FileAllowed(["jpg", "jpeg", "png"])
-    ])
+            NumberRange(
+                min=0, message="Es obligatorio que el numero de plazas sea minimo 0"
+            ),
+            InputRequired(
+                message="Es obligatorio que el numero de plazas sea minimo 0"
+            ),
+        ],
+    )
+    archivo_imagen = FileField(
+        "Cartel de la Actividad (JPG, PNG)",
+        validators=[FileAllowed(["jpg", "jpeg", "png"])],
+    )
 
     submit = SubmitField("Guardar Actividad")
 
@@ -76,7 +90,7 @@ class ActividadForm(FlaskForm):
         id_actual = getattr(self, "id_actual", None)
         if existente and existente.id != id_actual:
             raise ValidationError("Ya existe una actividad con este nombre")
-   
+
 
 class RegistroForm(FlaskForm):
     """Formulario de alta para nuevos socios."""
@@ -114,8 +128,8 @@ class RegistroForm(FlaskForm):
         "Introduce su edad:",
         validators=[
             DataRequired(message="Introduce se edad"),
-            NumberRange(min=16, message="La edad minima para poder registrarse es 16")
-        ]
+            NumberRange(min=16, message="La edad minima para poder registrarse es 16"),
+        ],
     )
     submit = SubmitField("Registrarme como Socio")
 
@@ -151,4 +165,3 @@ class CambiarPasswordForm(FlaskForm):
         ],
     )
     submit = SubmitField("Actualizar Contraseña")
-    

@@ -19,21 +19,21 @@ def home():
     return redirect(url_for("public.mostrar_actividades"))
 
 
-
-
 @public_bp.route("/actividades")
 def mostrar_actividades():
 
-    busqueda  = request.args.get("busqueda")
-    solo_con_plazas  = request.args.get("solo_con_plazas")
+    busqueda = request.args.get("busqueda")
+    solo_con_plazas = request.args.get("solo_con_plazas")
     consulta = Actividad.query
 
     if busqueda is not None and solo_con_plazas == "on":
-       actividades =  consulta.filter(Actividad.nombre.contains(busqueda)).filter(Actividad.plazas_libres > 0)
-    elif busqueda is not None :
-        actividades =  consulta.filter(Actividad.nombre.contains(busqueda))
+        actividades = consulta.filter(Actividad.nombre.contains(busqueda)).filter(
+            Actividad.plazas_libres > 0
+        )
+    elif busqueda is not None:
+        actividades = consulta.filter(Actividad.nombre.contains(busqueda))
     elif solo_con_plazas == "on":
-        actividades =  consulta.filter(Actividad.plazas_libres > 0)
+        actividades = consulta.filter(Actividad.plazas_libres > 0)
     else:
         actividades = consulta.all()
 
@@ -55,7 +55,9 @@ def ver_actividad(act_id):
 @public_bp.route("/preferencia/<string:deporte>")
 def guardar_preferencia(deporte):
     resp = make_response(redirect(url_for("public.mostrar_actividades")))
-    resp.set_cookie("deporte_fav", deporte, max_age=60*60*24*15, samesite="Lax", httponly=True)
+    resp.set_cookie(
+        "deporte_fav", deporte, max_age=60 * 60 * 24 * 15, samesite="Lax", httponly=True
+    )
     return resp
 
 
@@ -83,7 +85,7 @@ def apuntar_actividad(act_id):
     reservas.append(actividad.id)
     session["reservas"] = reservas
     session.permanent = True
-    session.modified=True
+    session.modified = True
     flash("Se apunto a la actividad correctamente", "exito")
     return redirect(url_for("public.mostrar_actividades"))
 
@@ -91,22 +93,22 @@ def apuntar_actividad(act_id):
 @public_bp.route("/reservas")
 @login_required
 def ver_reservas():
-    
+
     ids = session.get("reservas", [])
     actividades = Actividad.query.filter(Actividad.id.in_(ids)).all()
 
-    total_sin_descuento=0.0
+    total_sin_descuento = 0.0
     for act in actividades:
-        total_sin_descuento+=act.cuota
+        total_sin_descuento += act.cuota
 
     if len(actividades) == 3:
-        descuento_aplicado=True
+        descuento_aplicado = True
         descuento = total_sin_descuento / 100.0 * 20.0
         total_final = total_sin_descuento - descuento
     else:
-        descuento_aplicado=False
+        descuento_aplicado = False
         total_final = total_sin_descuento
-    
+
     return render_template(
         "reservas.html",
         actividades=actividades,
@@ -122,7 +124,7 @@ def cancelar_reserva(act_id):
     reservas = session.get("reservas", [])
     if act_id in reservas:
         reservas.remove(act_id)
-        session.modified=True
+        session.modified = True
         flash("Actividad eliminada de reservas", "info")
     else:
         flash("Actividad no estaba reservada", "error")
@@ -132,14 +134,12 @@ def cancelar_reserva(act_id):
 @public_bp.route("/reservas/confirmar", methods=["POST"])
 @login_required
 def confirmar_reservas():
-    reservas = session.get("reservas", [])
-    
+
     ids = session.get("reservas", [])
     actividades = Actividad.query.filter(Actividad.id.in_(ids)).all()
     for actividad in actividades:
-        actividad.plazas_libres-=1
+        actividad.plazas_libres -= 1
     db.session.commit()
     session.pop("reservas", None)
-    flash("Se apunto a las actividades con exito")
+    flash("Se apunto a las actividades con exito", "exito")
     return redirect(url_for("public.mostrar_actividades"))
-
